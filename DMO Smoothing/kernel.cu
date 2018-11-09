@@ -19,7 +19,7 @@ namespace DMO {
 	// ######################################################################### //
 	// ### Options ############################################################# //
 	// ######################################################################### //
-
+	
 	/* Keep NQ = 8 for two dimensional meshes! This value was chosen because it gives optimal
 	performance considering a warp-size of 32 because NQ = 8 results in 8 * 8 = 64 nodes
 	which is double the warp size. Each vertex is computed using one warp where each warp
@@ -27,27 +27,28 @@ namespace DMO {
 	Another implementation used 2 warps for one grid but it was slower as syncthreads is
 	too expensive.
 	*/
-// Size of Quality Mesh
-#define NQ 8
-// number of refinement steps within DMO
-#define DMO_DEPTH 3
-// double the maximal number of allowed vertices on the one-ring neighborhood
-#define MAX_ONE_RING_SIZE 32
-// Maximal number of allowed vertices on the one-ring neighborhood in 3D
-#define MAX_ONE_RING_SIZE_3D 360
+	
+	// Size of Quality Mesh
+	#define NQ 8
+	// number of refinement steps within DMO
+	#define DMO_DEPTH 3
+	// double the maximal number of allowed vertices on the one-ring neighborhood
+	#define MAX_ONE_RING_SIZE 32
+	// Maximal number of allowed vertices on the one-ring neighborhood in 3D
+	#define MAX_ONE_RING_SIZE_3D 360
+	
+	// For quality output
+	#define N_QUALITY_COLS 10
+	// Set this value to print quality
+	#define PRINT_QUALITY 1
 
-// For quality output
-#define N_QUALITY_COLS 10
-// Set this value to print quality
-#define PRINT_QUALITY 1
 
+	// ######################################################################### //
+	// ### Misc Functions ###################################################### //
+	// ######################################################################### //
 
-// ######################################################################### //
-// ### Misc Functions ###################################################### //
-// ######################################################################### //
-
-// Error output
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+	// Error output
+	#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 	inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
 	{
 		if (code != cudaSuccess)
@@ -63,7 +64,6 @@ namespace DMO {
 		cudaSetDevice(0);
 		cudaFree(0);
 	}
-
 
 	typedef union {
 		float floats[2];                 // floats[0] = lowest

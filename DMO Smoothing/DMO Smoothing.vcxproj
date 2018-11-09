@@ -45,10 +45,14 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)Dependencies\eigen-3.3.5\include;$(SolutionDir)Dependencies\OpenMesh-7.1\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Dependencies\OpenMesh-7.1\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\intermediate\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)Dependencies\eigen-3.3.5\include;$(SolutionDir)Dependencies\OpenMesh-7.1\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Dependencies\OpenMesh-7.1\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\intermediate\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -91,9 +95,11 @@
     <ClCompile Include="DiscreteMeshOptimization.cpp" />
     <ClCompile Include="DiscreteMeshOptimization.h" />
     <ClCompile Include="actual_main.cpp" />
+    <ClCompile Include="gui.cpp" />
     <ClCompile Include="Stopwatch.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="gui.h" />
     <ClInclude Include="OpenMeshConfig.h" />
     <ClInclude Include="QualityCriteria.h" />
     <ClInclude Include="Stopwatch.h" />
