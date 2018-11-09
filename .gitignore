@@ -1,0 +1,5 @@
+.vs/
+*.swp
+x64/
+output.txt
+Dependencies/

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2002
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DMO Smoothing", "DMO Smoothing\DMO Smoothing.vcxproj", "{665D2544-9E62-4984-9F81-1D7B2E5608AD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{665D2544-9E62-4984-9F81-1D7B2E5608AD}.Debug|x64.ActiveCfg = Debug|x64
+		{665D2544-9E62-4984-9F81-1D7B2E5608AD}.Debug|x64.Build.0 = Debug|x64
+		{665D2544-9E62-4984-9F81-1D7B2E5608AD}.Release|x64.ActiveCfg = Release|x64
+		{665D2544-9E62-4984-9F81-1D7B2E5608AD}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DA8A135B-7594-4C72-92D9-AE66908CF676}
+	EndGlobalSection
+EndGlobal
