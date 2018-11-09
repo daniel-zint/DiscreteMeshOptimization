@@ -7,7 +7,7 @@ int main() {
 	Stopwatch watch;
 
 	// Enter path to your Mesh here
-	std::string fileName = "../Meshes/ikeFlat.off";
+	std::string fileName = "../Meshes/example.obj";
 
 	TriMesh mesh;
 	// read mesh from file:
@@ -25,6 +25,7 @@ int main() {
 
 	// --- the actual calculation --- //
 	DMO::discreteMeshOptimization(mesh, DMO::MEAN_RATIO, 0.5, 4);
+	// ------------------------------ //
 
 	watch.stop();
 	std::cout << "### DMO finished ###" << std::endl;
@@ -33,7 +34,7 @@ int main() {
 	DMO::displayQuality(mesh, 10);
 
 	// save smoothened mesh to file
-	std::string outputFileName = "../Meshes/output.off";
+	std::string outputFileName = "../Meshes/output.obj";
 	std::cout << "Saving Mesh to " << outputFileName << "." << std::endl;
 
 	if (!OpenMesh::IO::write_mesh(mesh, outputFileName)) {

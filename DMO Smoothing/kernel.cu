@@ -27,7 +27,7 @@ namespace DMO {
 	Another implementation used 2 warps for one grid but it was slower as syncthreads is
 	too expensive.
 	*/
-	// Size of Quality Mesh
+// Size of Quality Mesh
 #define NQ 8
 // number of refinement steps within DMO
 #define DMO_DEPTH 3
@@ -39,7 +39,7 @@ namespace DMO {
 // For quality output
 #define N_QUALITY_COLS 10
 // Set this value to print quality
-#define PRINT_QUALITY 0
+#define PRINT_QUALITY 1
 
 
 // ######################################################################### //
@@ -1117,6 +1117,8 @@ namespace DMO {
 		float *q_min_vec, *q_avg_vec;
 		cudaMallocManaged(&q_min_vec, (n_iter + 1) * sizeof(float));
 		cudaMallocManaged(&q_avg_vec, (n_iter + 1) * sizeof(float));
+
+		std::cout << "q_min_vec: " << q_min_vec << ", q_avg_vec: " << q_avg_vec << std::endl;
 
 		printf("    ");
 		for (int i = 0; i < N_QUALITY_COLS; ++i) {
