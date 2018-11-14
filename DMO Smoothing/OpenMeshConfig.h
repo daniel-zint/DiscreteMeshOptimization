@@ -1,3 +1,9 @@
+/**
+ * Copyright (C) 2018 by Daniel Zint and Philipp Guertler
+ * This file is part of Discrete Mesh Optimization DMO
+ * Some rights reserved. See LICENCE.
+ */
+
 #pragma once
 
 #include <OpenMesh\Core\IO\MeshIO.hh>

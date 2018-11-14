@@ -1,3 +1,13 @@
+/**
+ * Copyright (C) 2018 by Daniel Zint and Philipp Guertler
+ * This file is part of Discrete Mesh Optimization DMO
+ * Some rights reserved. See LICENCE.
+ *
+ * This File implements DMO Smoothing on CPU with a Mean Ratio
+ * metric only.
+ * Other Metrics are implemented in CUDA in "kernel.cu".
+ */
+
 #include "DiscreteMeshOptimization.h"
 
 namespace DMO {
@@ -27,9 +37,11 @@ namespace DMO {
 			heh = mesh.next_halfedge_handle(heh);
 			heh = mesh.opposite_halfedge_handle(mesh.next_halfedge_handle(heh));
 		} while (heh != heh_init);
-		oneRing.push_back(oneRing[0]);		// close ring by making first element also the last element
 
-											// pre-compute length of one-ring edges
+		// close ring by making first element also the last element
+		oneRing.push_back(oneRing[0]);		
+		
+		// pre-compute length of one-ring edges
 		std::vector<float> oneRingLength(oneRing.size());
 		for (size_t i = 0; i < oneRing.size() - 1; ++i) {
 			oneRingLength[i] = (oneRing[i] - oneRing[i + 1]).squaredNorm();
@@ -80,7 +92,6 @@ namespace DMO {
 				}
 			}
 
-
 			// find max of q
 			size_t iOpt = 0;
 			size_t jOpt = 0;
@@ -105,7 +116,7 @@ namespace DMO {
 		mesh.set_point(vh, p_opt);
 	}
 
-	void discreteMeshOptimizationCPU(PolyMesh& mesh, const int qualityCriterium, const float gridScale, int n_iter) {
+	void discreteMeshOptimizationCPU(PolyMesh& mesh, QualityCriterium qualityCriterium, const float gridScale, int n_iter) {
 		// do n_iter smoothing iterations
 		for (size_t i = 0; i < n_iter; ++i) {
 			// smoothen every vertex of mesh except the boundary
@@ -205,7 +216,9 @@ namespace DMO {
 		for (auto f_it = mesh.faces_begin(); f_it != mesh.faces_end(); ++f_it) {
 			float q = metricMeanRatioTri(mesh, *f_it);
 			q_min = fminf(q_min, q);
-			q_vec[size_t(q * 10 - 0.0001)] += 1;
+			q = fmaxf(0.0001, q);
+			size_t index = size_t(q * 10 - 0.0001);
+			q_vec[index] += 1;
 		}
 
 		for (size_t i = 0; i < q_vec.size(); ++i) {
@@ -220,6 +233,7 @@ namespace DMO {
 		// measure quality
 		for (auto f_it = mesh.faces_begin(); f_it != mesh.faces_end(); ++f_it) {
 			float q = metricMeanRatioQuad(mesh, *f_it);
+			q = fmaxf(0.0001, q);
 			q_vec[size_t(q * 10 - 0.0001)] += 1;
 		}
 

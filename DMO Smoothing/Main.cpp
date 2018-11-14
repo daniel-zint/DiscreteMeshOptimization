@@ -1,9 +1,14 @@
+/**
+ * Copyright (C) 2018 by Daniel Zint and Philipp Guertler
+ * This file is part of Discrete Mesh Optimization DMO
+ * Some rights reserved. See LICENCE.
+ */
+
 #include "DiscreteMeshOptimization.h"
 
 int main() {
 
 	DMO::initCuda();
-
 	Stopwatch watch;
 
 	// Enter path to your Mesh here
