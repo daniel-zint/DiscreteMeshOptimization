@@ -40,8 +40,7 @@ namespace DMO {
 		}
 	}
 
-	// --- Initialize Cuda --- //
-	// It is not necessary but recommended as initialization takes about 200 ms. Call this function early in your code.
+	// Initialize CUDA. It is not necessary but recommended as initialization takes about 200 ms. Call this function early in your code.
 	void initCuda() {
 		cudaSetDevice(0);
 		cudaFree(0);
@@ -82,11 +81,12 @@ namespace DMO {
 
 
 	// ######################################################################### //
-	// ### Quality Metrics per Element ######################################### //
+	// ##################### Quality Metrics per Element ####################### //
+	//                                                                           //
+	//    These Metrics take a single Triangle or a Single Quad and calculate    //
+	//    its quality.                                                           //
 	// ######################################################################### //
-	// ## These Metrics take a single Triangle or a Single Quad and calculate ## //
-	// ## its quality.														  ## //
-	// ######################################################################### //
+
 
 	// ######################################################################### //
 	// ### Triangle Metrics: ################################################### //
@@ -132,7 +132,6 @@ namespace DMO {
 			int j = (i - 1 + 3) % 3;
 			float dot = e[i][0] * e[j][0] + e[i][1] * e[j][1];
 			float det = e[i][0] * e[j][1] - e[i][1] * e[j][0];
-			//printf("%f\n", atan2f(det, dot));
 			a[i] = CUDART_PI - fabsf(atan2f(det, dot));
 		}
 
@@ -144,7 +143,6 @@ namespace DMO {
 			float qc = 1.f - fabsf(e_length[i] - e_length[j]) / fmaxf(e_length[i], e_length[j]);
 
 			q_tri = fmaxf(q_tri, qa * qc);
-			//q_tri = fmaxf(q_tri, qa);
 		}
 
 		return q_tri;
@@ -304,7 +302,6 @@ namespace DMO {
 		float rEdge = sqrtf((p[jir][0] - p[ji][0]) * (p[jir][0] - p[ji][0]) + (p[jir][1] - p[ji][1]) * (p[jir][1] - p[ji][1]));
 
 		return j[ji] / (lEdge * rEdge);
-
 	}
 
 	// ### MIN_ANGLE Metric for Quads ########################################## //
@@ -336,11 +333,12 @@ namespace DMO {
 	
 
 	// ######################################################################### //
-	// ########################### Qualities ################################### //
+	// ############################ Qualities ################################## //
+	//                                                                           //
+	//    These functions take the one-ring neighborhood of a vertex and         //
+	//    calculate its entire quality.                                          //
 	// ######################################################################### //
-	// ## These functions take the one-ring neighborhood of a vertex and	  ## //
-	// ## calculate its entire quality.										  ## //
-	// ######################################################################### //
+	
 
 	// ######################################################################### //
 	// ### Triangle Qualities: ################################################# //
@@ -502,7 +500,7 @@ namespace DMO {
 			break;
 		case JACOBIAN:
 			#ifdef DMO_TRIANGLES
-			// not implemented
+			// not implemented for triangles
 			#else
 			return qualityJacobianQuad(n_oneRing, oneRing, p);
 			#endif	
@@ -518,14 +516,14 @@ namespace DMO {
 			#ifdef DMO_TRIANGLES
 			return qualityRadiusRatioTri(n_oneRing, oneRing, p);
 			#else
-			// not implemented
+			// not implemented for quads
 			#endif
 			break;
 		case MAX_ANGLE:
 			#ifdef DMO_TRIANGLES
 			return qualityMaxAngleTri(n_oneRing, oneRing, p);
 			#else
-			// not implemented
+			// not implemented for quads
 			#endif
 			break;
 		default:
@@ -540,7 +538,7 @@ namespace DMO {
 		
 	__host__ __device__ __forceinline__ float faceQuality(const float *vertexPos, const int *faceVec, const int n_face, QualityCriterium q_crit) {
 		float q;
-		int v_id[3];
+
 		switch (q_crit) {
 		case MEAN_RATIO:
 		{
@@ -551,7 +549,6 @@ namespace DMO {
 				p[i][0] = vertexPos[2 * v_id[i]];
 				p[i][1] = vertexPos[2 * v_id[i] + 1];
 			}
-
 			q = metricMeanRatioTri(p);
 			#else 
 			int v_id[4] = { faceVec[4 * n_face],  faceVec[4 * n_face + 1], faceVec[4 * n_face + 2], faceVec[4 * n_face + 3] };
@@ -563,8 +560,8 @@ namespace DMO {
 
 			q = metricMeanRatioQuad(p);
 			#endif
+			break;
 		}
-		break;
 		case RIGHT_ANGLE:
 		{
 			#ifdef DMO_TRIANGLES
@@ -577,18 +574,12 @@ namespace DMO {
 
 			q = metricRectangularityTri(p);
 			#else 
-			int v_id[3] = { faceVec[3 * n_face],  faceVec[3 * n_face + 1], faceVec[3 * n_face + 2] };
-			float p[3][2];
-			for (int i = 0; i < 3; ++i) {
-				p[i][0] = vertexPos[2 * v_id[i]];
-				p[i][1] = vertexPos[2 * v_id[i] + 1];
-			}
-
-			q = metricRectangularityTri(p);
+			printf("Right-Angle quality metric is not implemented for QuadMeshes.\n");
 			#endif
+			break;
 		}
-		break;
 		case JACOBIAN:
+		{
 			#ifdef DMO_TRIANGLES
 			printf("Jacobian quality metric is not implemented for TriMeshes.\n");
 			#else
@@ -601,6 +592,7 @@ namespace DMO {
 			q = metricScaledJacobianQuad(p);
 			#endif
 			break;
+		}
 		case MIN_ANGLE:
 		{
 			#ifdef DMO_TRIANGLES
@@ -613,17 +605,17 @@ namespace DMO {
 
 			q = metricMinAngleTri(p);
 			#else
-			int v_id[3] = { faceVec[3 * n_face],  faceVec[3 * n_face + 1], faceVec[3 * n_face + 2] };
+			int v_id[4] = { faceVec[4 * i],  faceVec[4 * i + 1], faceVec[4 * i + 2], faceVec[4 * i + 3] };
 			float p[3][2];
-			for (int i = 0; i < 3; ++i) {
+			for (int i = 0; i < 4; ++i) {
 				p[i][0] = vertexPos[2 * v_id[i]];
 				p[i][1] = vertexPos[2 * v_id[i] + 1];
 			}
 
-			q = metricMinAngleTri(p);
+			q = metricMinAngleQuad(p);
 			#endif
+			break;
 		}
-		break;
 		case RADIUS_RATIO:
 		{
 			#ifdef DMO_TRIANGLES
@@ -638,8 +630,8 @@ namespace DMO {
 			#else
 			printf("Radius Ratio quality metric is not implemented for QuadMeshes.\n");
 			#endif
+			break;
 		}
-		break;
 		case MAX_ANGLE:
 		{
 			#ifdef DMO_TRIANGLES
@@ -654,10 +646,11 @@ namespace DMO {
 			#else 
 			printf("Max Angle quality metric is not implemented for QuadMeshes.\n");
 			#endif
+			break;
 		}
-		break;
 		default:
 			printf("Quality Metric unknown\n");
+			break;
 		}
 		return q;
 	}
@@ -674,7 +667,8 @@ namespace DMO {
 			if (q > 1.f) q = 1.f;
 			else if (q < 0.f) q = 0.f;
 
-			q_vec[int(q * DMO_N_QUALITY_COLS)] += 1;
+			int index = (int)(q*DMO_N_QUALITY_COLS);
+			q_vec[index] += 1;
 			q_min = fminf(q_min, q);
 		}
 
@@ -712,7 +706,7 @@ namespace DMO {
 	// ### DMO Algorithm ####################################################### //
 	// ######################################################################### //
 
-	__global__ void optimizeHierarchical(int* coloredVertexIDs, const int cOff, const Vertex* vertices, float* vertexPos, int* oneRingVec, const float affineFactor, const int element_size, QualityCriterium q_crit, const float grid_scale) {
+	__global__ void optimizeHierarchical(int* coloredVertexIDs, const int cOff, const Vertex* vertices, float* vertexPos, int* oneRingVec, const float affineFactor, QualityCriterium q_crit, const float grid_scale) {
 		const int i1 = threadIdx.x / DMO_NQ;
 		const int j1 = threadIdx.x % DMO_NQ;
 
@@ -751,7 +745,7 @@ namespace DMO {
 			// set xmaxmin...
 			maxDistx = grid_scale * maxDistx;
 			maxDisty = grid_scale * maxDisty;
-
+			
 			oneRing[2 * v.n_oneRing - 2] = vertexPos[2 * oneRingVec[v.oneRingID + v.n_oneRing - 1]];
 			oneRing[2 * v.n_oneRing - 1] = vertexPos[2 * oneRingVec[v.oneRingID + v.n_oneRing - 1] + 1];
 
@@ -778,14 +772,8 @@ namespace DMO {
 			float pos_j2 = affineFactor * (j2 * yMin + (DMO_NQ - 1 - j2) * yMax);
 
 			float p1[2] = { pos_i1, pos_j1 };
-			//float q1 = element_size == 3
-			//	? qualityTri(v.n_oneRing, oneRing, p1, q_crit)
-			//	: qualityQuad(v.n_oneRing, oneRing, p1, q_crit);
 			float q1 = quality(v.n_oneRing, oneRing, p1, q_crit);
 			float p2[2] = { pos_i2, pos_j2 };
-			//float q2 = element_size == 3
-			//	? qualityTri(v.n_oneRing, oneRing, p2, q_crit)
-			//	: qualityQuad(v.n_oneRing, oneRing, p2, q_crit);
 			float q2 = quality(v.n_oneRing, oneRing, p2, q_crit);
 
 			if (q1 > q2) {
@@ -799,9 +787,6 @@ namespace DMO {
 
 			my_atomicArgMax(&(argMaxVal.ulong), q, i1 * DMO_NQ + j1);
 
-			//float qOld = element_size == 3
-			//	? qualityTri(v.n_oneRing, oneRing, pCurrent, q_crit)
-			//	: qualityQuad(v.n_oneRing, oneRing, pCurrent, q_crit);
 			float qOld = quality(v.n_oneRing, oneRing, pCurrent, q_crit);
 			if (i1 * DMO_NQ + j1 == argMaxVal.ints[1] && qOld < q) {
 				if (argMax == 1) {
@@ -821,11 +806,7 @@ namespace DMO {
 
 		// set new position if it is better than the old one
 		float pOld[2] = { vertexPos[2 * v.id] , vertexPos[2 * v.id + 1] };
-		//float qTmp = element_size == 3
-		//	? qualityTri(v.n_oneRing, oneRing, pOld, q_crit)
-		//	: qualityTri(v.n_oneRing, oneRing, pOld, q_crit);
-		float qTmp = quality(v.n_oneRing, oneRing, pOld, q_crit);
-		if (i1 * DMO_NQ + j1 == argMaxVal.ints[1] && qTmp < q) {
+		if (i1 * DMO_NQ + j1 == argMaxVal.ints[1] && quality(v.n_oneRing, oneRing, pOld, q_crit) < q) {
 			vertexPos[2 * v.id] = xPos;
 			vertexPos[2 * v.id + 1] = yPos;
 		}
@@ -859,7 +840,9 @@ namespace DMO {
 				v.n_oneRing = 0;
 				for (auto voh_it = mesh.voh_iter(*v_it); voh_it.is_valid(); ++voh_it) {
 					++v.n_oneRing;
+					#ifndef DMO_TRIANGLES
 					if (!mesh.is_boundary(*voh_it)) ++v.n_oneRing;
+					#endif
 				}
 				++v.n_oneRing;
 
@@ -871,10 +854,10 @@ namespace DMO {
 				do {
 					oneRingVec[oneRing_counter++] = mesh.to_vertex_handle(heh).idx();
 					heh = mesh.next_halfedge_handle(heh);
-				#ifndef DMO_TRIANGLES
+					#ifndef DMO_TRIANGLES
 					oneRingVec[oneRing_counter++] = mesh.to_vertex_handle(heh).idx();
 					heh = mesh.next_halfedge_handle(heh);
-				#endif
+					#endif
 					heh = mesh.next_halfedge_handle(heh);
 					heh = mesh.opposite_halfedge_handle(heh);
 				} while (heh.idx() != heh_init.idx());
@@ -914,13 +897,13 @@ namespace DMO {
 				}
 			#else 
 				for (auto voh_it = mesh.voh_iter(*v_it); voh_it.is_valid(); ++voh_it) {
-					PolyMesh::VertexHandle vh1 = mesh.to_vertex_handle(*voh_it);
-					PolyMesh::VertexHandle vh2 = mesh.to_vertex_handle(mesh.next_halfedge_handle(*voh_it));
+					DMOMesh::VertexHandle vh1 = mesh.to_vertex_handle(*voh_it);
+					DMOMesh::VertexHandle vh2 = mesh.to_vertex_handle(mesh.next_halfedge_handle(*voh_it));
 					if (colorScheme[vh1.idx()] == colorSchemeIt || colorScheme[vh2.idx()] == colorSchemeIt) {
 						neighborIsCurrent = true;
 						break;
 					}
-			}
+				}
 			#endif
 				// check if a neighboring vertex is already in this color
 				if (neighborIsCurrent) { continue; }
@@ -990,9 +973,9 @@ namespace DMO {
 		std::vector<int> colorOffset;
 
 
-#pragma omp parallel sections num_threads(2)
+		#pragma omp parallel sections num_threads(2)
 		{
-#pragma omp section
+			#pragma omp section
 			{
 				gpuErrchk(cudaMalloc((void**)&d_vertexPos, 2 * mesh.n_vertices() * sizeof(float)));
 				gpuErrchk(cudaMalloc((void**)&d_vertices, n_free_vertices * sizeof(Vertex)));
@@ -1002,7 +985,7 @@ namespace DMO {
 				createColoring(mesh, n_free_vertices, &coloredVertexIDs, colorOffset);
 				gpuErrchk(cudaMemcpyAsync(d_coloredVertexIDs, coloredVertexIDs, n_free_vertices * sizeof(int), cudaMemcpyHostToDevice));
 			}
-#pragma omp section 
+			#pragma omp section 
 			{
 				copyOpenMeshData(mesh, vertexPos, vertices, oneRingVec);
 			}
@@ -1039,25 +1022,23 @@ namespace DMO {
 		cudaMallocManaged(&q_min_vec, (n_iter + 1) * sizeof(float));
 		cudaMallocManaged(&q_avg_vec, (n_iter + 1) * sizeof(float));
 
-		std::cout << "q_min_vec: " << q_min_vec << ", q_avg_vec: " << q_avg_vec << std::endl;
-
 		printf("    ");
 		for (int i = 0; i < DMO_N_QUALITY_COLS; ++i) {
 			printf("<%1.3f|", (float)(i + 1) / (float)DMO_N_QUALITY_COLS);
 		}
 		printf("\n\n");
-		printFaceQuality << <1, 1 >> >(d_vertexPos, d_faceVec, mesh.n_faces(), q_crit);
-		printFaceQuality << <1, 1 >> >(d_vertexPos, d_faceVec, mesh.n_faces(), q_crit, q_min_vec, q_avg_vec);
+		printFaceQuality <<<1, 1 >>>(d_vertexPos, d_faceVec, mesh.n_faces(), q_crit);
+		printFaceQuality <<<1, 1 >>>(d_vertexPos, d_faceVec, mesh.n_faces(), q_crit, q_min_vec, q_avg_vec);
 #endif // DMO_PRINT_QUALITY
 
 		for (int i = 0; i < n_iter; ++i) {
 			for (int cid = 0; cid < n_colors; ++cid) {
-				optimizeHierarchical << <colorOffset[cid + 1] - colorOffset[cid], DMO_NQ * DMO_NQ / 2 >> >(d_coloredVertexIDs, colorOffset[cid], d_vertices, d_vertexPos, d_oneRingVec, affineFactor, 3, q_crit, grid_scale);
+				optimizeHierarchical<<<colorOffset[cid + 1] - colorOffset[cid], DMO_NQ * DMO_NQ / 2 >>>(d_coloredVertexIDs, colorOffset[cid], d_vertices, d_vertexPos, d_oneRingVec, affineFactor, q_crit, grid_scale);
 			}
 #if DMO_PRINT_QUALITY
 			cudaDeviceSynchronize();
-			printFaceQuality << <1, 1 >> >(d_vertexPos, d_faceVec, mesh.n_faces(), q_crit);
-			printFaceQuality << <1, 1 >> >(d_vertexPos, d_faceVec, mesh.n_faces(), q_crit, q_min_vec, q_avg_vec);
+			printFaceQuality<<<1, 1 >>>(d_vertexPos, d_faceVec, mesh.n_faces(), q_crit);
+			printFaceQuality<<<1, 1 >>>(d_vertexPos, d_faceVec, mesh.n_faces(), q_crit, q_min_vec, q_avg_vec);
 #endif // DMO_PRINT_QUALITY
 		}
 
@@ -1066,10 +1047,8 @@ namespace DMO {
 		std::string ofs_name = "../output.txt";
 		std::ofstream ofs;
 		ofs.open(ofs_name);
-		if (ofs.good()) {
-			for (int i = 0; i < n_iter + 1; ++i) {
-				ofs << i << " " << q_min_vec[i] << " " << q_avg_vec[i] << std::endl;
-			}
+		for (int i = 0; i < n_iter + 1; ++i) {
+			ofs << i << " " << q_min_vec[i] << " " << q_avg_vec[i] << std::endl;
 		}
 		ofs.close();
 #endif // DMO_PRINT_QUALITY
@@ -1096,7 +1075,7 @@ namespace DMO {
 		// write vertex positions back to mesh
 		for (auto v_it = mesh.vertices_begin(); v_it != mesh.vertices_end(); ++v_it) {
 			int id = v_it->idx();
-			TriMesh::Point p = { vertexPos[2 * id], vertexPos[2 * id + 1], 0.f };
+			DMOMesh::Point p = { vertexPos[2 * id], vertexPos[2 * id + 1], 0.f };
 			mesh.set_point(*v_it, p);
 		}
 
@@ -1112,7 +1091,6 @@ namespace DMO {
 
 		int n_free_vertices = 0;
 		for (auto v_it = mesh.vertices_begin(); v_it != mesh.vertices_end(); ++v_it) { if (!mesh.is_boundary(*v_it)) ++n_free_vertices; }
-		//printf("N free vertices = %d\n", n_free_vertices);
 
 		int oneRingVecLength = 0;
 		for (auto v_it = mesh.vertices_begin(); v_it != mesh.vertices_end(); ++v_it) {
@@ -1121,7 +1099,8 @@ namespace DMO {
 				++oneRingVecLength;
 				if (!mesh.is_boundary(*voh_it)) ++oneRingVecLength;
 			}
-			++oneRingVecLength;		// additional count s.th. last element is again the first element
+			// additional count s.th. last element is again the first element
+			++oneRingVecLength;
 		}
 
 		// convert OpenMesh to a basic structure
@@ -1191,7 +1170,7 @@ namespace DMO {
 		sw.start();
 		for (int i = 0; i < n_iter; ++i) {
 			for (int cid = 0; cid < n_colors; ++cid) {
-				optimizeHierarchical<<<colorOffset[cid + 1] - colorOffset[cid], DMO_NQ * DMO_NQ / 2 >>>(d_coloredVertexIDs, colorOffset[cid], d_vertices, d_vertexPos, d_oneRingVec, affineFactor, 4, q_crit, grid_scale);
+				optimizeHierarchical<<<colorOffset[cid + 1] - colorOffset[cid], DMO_NQ * DMO_NQ / 2 >>>(d_coloredVertexIDs, colorOffset[cid], d_vertices, d_vertexPos, d_oneRingVec, affineFactor, q_crit, grid_scale);
 			}
 #if DMO_PRINT_QUALITY
 			cudaDeviceSynchronize();
@@ -1244,7 +1223,7 @@ namespace DMO {
 	// ######################################################################### //
 	// ### CPU version ######################################################### //
 
-	inline void optimizeHierarchical(const int vid, const Vertex* vertices, float* vertexPos, int* oneRingVec, const float affineFactor, const int element_size, QualityCriterium q_crit, const float grid_scale) {
+	inline void optimizeHierarchical(const int vid, const Vertex* vertices, float* vertexPos, int* oneRingVec, const float affineFactor, QualityCriterium q_crit, const float grid_scale) {
 
 		const Vertex& v = vertices[vid];
 
@@ -1344,7 +1323,7 @@ namespace DMO {
 		sw.start();
 		for (int i = 0; i < n_iter; ++i) {
 			for (int vid = 0; vid < n_free_vertices; ++vid) {
-				optimizeHierarchical(vid, vertices, vertexPos, oneRingVec, affineFactor, 3, q_crit, grid_scale);
+				optimizeHierarchical(vid, vertices, vertexPos, oneRingVec, affineFactor, q_crit, grid_scale);
 			}
 		}
 		sw.stop();
