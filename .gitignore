@@ -1,5 +1,3 @@
-.vs/
+build/
 *.swp
-x64/
 output.txt
-Dependencies/

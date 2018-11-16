@@ -1,7 +1,0 @@
-x64/
-*.swp
-kernel_orig.cu
-*.pdb
-GPUMeshSmoothing.cpp
-DMO\ Smoothing.vcxproj.user
-bin/
