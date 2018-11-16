@@ -17,4 +17,6 @@ __Windows:__
 - Select "DMO" as Startup Project and Build it.
 
 __Linux:__
-- TODO
+- Create a build folder in the root directory of the project.
+- Execute "cmake .. -DCMAKE_INSTALL_PREFIX=x" inside the build folder where x is the location of the installation of OpenMesh and Eigen.
+- call make.
