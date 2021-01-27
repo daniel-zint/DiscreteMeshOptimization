@@ -729,6 +729,8 @@ namespace DMO {
 
 		// min/max search + loading oneRing
 		if (threadIdx.x == 0) {
+			maxDistx = 0;
+			maxDisty = 0;
 			for (int k = 0; k < v.n_oneRing - 1; ++k) {
 				float oneRingX = vertexPos[2 * oneRingVec[v.oneRingID + k]];
 				float oneRingY = vertexPos[2 * oneRingVec[v.oneRingID + k] + 1];
