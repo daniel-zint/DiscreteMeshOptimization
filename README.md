@@ -1,3 +1,7 @@
+# OUTDATED
+There is a new version of this code that is based on templates. It is faster, shorter and works on both, GPU and CPU. Additionally, it is much easier to add new quality metrics:
+https://github.com/DanielZint/dmo_templated
+
 # DiscreteMeshOptimization
 Discrete Mesh Optimization implemented in C++ and CUDA. Currently available for flat 2D Meshes. Code for Surface and Volume Meshes will follow as soon as our code is optimized and cleaned-up. We are working on it.
 
